@@ -37,7 +37,7 @@ def main() -> None:
     )
     logger.info("Starting batch inference server with settings:\n %s", settings)
 
-    queue = InMemoryQueueActor.remote(settings.pipeline_config, dd)  # type: ignore
+    queue = InMemoryQueueActor.remote(settings.pipeline_config)  # type: ignore
 
     tokenizer_pool = ActorPool(
         [TokenizerActor.remote(settings.llm_model_config, settings.format_config) for _ in range(settings.pipeline_config.num_tokenizers)]  # type: ignore
@@ -56,7 +56,7 @@ def main() -> None:
     )
 
     workers = [
-        WorkerActor.remote(settings, queue, dd, tokenizer_pool, predictor_pool)  # type: ignore
+        WorkerActor.remote(settings, queue, tokenizer_pool, predictor_pool)  # type: ignore
         for _ in range(settings.pipeline_config.num_workers)
     ]
 
