@@ -1,0 +1,116 @@
+[project]
+name = "birr"
+version = "0.2.0"
+description = "Tool for orchestrating LLM/VLM inference"
+authors = [{ name = "Allen AI", email = "chrisw@allenai.org" }]
+license = { text = "Apache-2.0" }
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "jsonschema",
+    "pillow",
+    "pyaml",
+    "pydantic>=2,<3",
+    "pydantic-settings",
+    "zstandard",
+]
+
+classifiers = ["Development Status :: 3 - Alpha", "Typing :: Typed"]
+
+[project.urls]
+Homepage = "https://github.com/allenai/birr"
+Source = "https://github.com/allenai/birr"
+Tracker = "https://github.com/allenai/birr/issues"
+
+[project.optional-dependencies]
+dev = [
+    "black[jupyter]>=22.6.0",
+    "flake8>=5.0",
+    "flake8-pyi>=22.8.1",
+    "Flake8-pyproject>=1.1.0",
+    "ipdb>=0.13.0",
+    "ipython>=8.4.0",
+    "isort>=5.10.1",
+    "mypy==1.13.0",
+    "pytest>=5.2",
+    "requests"
+]
+batch_inference = [
+    "bitsandbytes",
+    "numpy",
+    "nvidia-ml-py",  # gets pynvml
+    "qwen-vl-utils",
+    "ray[default]",
+    "sentencepiece",
+    "torch>=2.2.0",
+    "transformers>=4.45.1",
+]
+# vllm is separated because it cannot be installed on macs
+vllm = [
+    "vllm==0.6.3.post1",
+    "vllm-flash-attn==2.6.1",
+]
+
+
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools >= 61.0.0", "wheel"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+birr = ["py.typed", "*.pyi", "demo/res/*/*"]
+
+[tool.black]
+line-length = 115
+include = '\.pyi?$'
+exclude = '''
+(
+      __pycache__
+    | \.git
+    | \.mypy_cache
+    | \.pytest_cache
+    | \.vscode
+    | \.venv
+    | \bdist\b
+    | \bdoc\b
+    | \.cargo
+    | configs
+    | docs
+    | scripts
+    | sources
+    | target
+    | tests/config
+    | tests/data
+    | tests/work
+)
+'''
+target-version = ["py38", "py39", "py310", "py311", "py312"]
+
+
+[tool.mypy]
+python_version = "3.8"
+ignore_missing_imports = true
+no_site_packages = true
+allow_redefinition = false
+warn_unused_configs = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_return_any = false
+warn_unreachable = true
+show_error_codes = true
+pretty = true
+plugins = ["numpy.typing.mypy_plugin"]
+
+[tool.mypy-tests]
+strict_optional = false
+
+[tool.pytest.ini_options]
+testpaths = ['tests/']
+pythonpath = ['.', 'src']
+python_classes = ['Test*', '*Test']
+log_format = '%(asctime)s - %(levelname)s - %(name)s - %(message)s'
+log_level = 'DEBUG'
+markers = []
+filterwarnings = []
