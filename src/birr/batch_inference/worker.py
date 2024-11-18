@@ -74,6 +74,7 @@ class Worker:
             self._tokenizers.map_unordered(lambda toker, batch: toker.prepare_inputs.remote(batch), chunked_pumps)
         )
 
+
         return prepared
 
     def _predict(self, sorted_instances: List[PreparedInputItem]) -> Iterator[CompletedItem]:
@@ -123,43 +124,44 @@ class Worker:
         )
 
     def run(self) -> None:
-        if (
-            self._settings.pipeline_config.max_num_messages_per_worker
-            and self._messages_processed == self._settings.pipeline_config.max_num_messages_per_worker
-        ):
-            logger.info(
-                f"Worker finished processing {self._settings.pipeline_config.max_num_messages_per_worker} messages. Terminating..."
-            )
-            return
+        while True:
+            if (
+                self._settings.pipeline_config.max_num_messages_per_worker
+                and self._messages_processed == self._settings.pipeline_config.max_num_messages_per_worker
+            ):
+                logger.info(
+                    f"Worker finished processing {self._settings.pipeline_config.max_num_messages_per_worker} messages. Terminating..."
+                )
+                return
 
-        try:
-            message = ray.get(self._queue.get_message.remote())
-            self._current_message = message
-        except ray.exceptions.ActorDiedError:
-            logger.exception("Queue Actor died")
-            ray.actor.exit_actor()
-        except Exception:
-            logger.exception("Failure when fetching messages")
+            try:
+                message = ray.get(self._queue.get_message.remote())
+                self._current_message = message
+            except ray.exceptions.ActorDiedError:
+                logger.exception("Queue Actor died")
+                ray.actor.exit_actor()
+            except Exception:
+                logger.exception("Failure when fetching messages")
 
-        if not message:
-            logger.info("Out of messages, terminating...")
-            return
+            if not message:
+                logger.info("Out of messages, terminating...")
+                return
 
-        start = time.monotonic()
-        self._current_message_start = start
+            start = time.monotonic()
+            self._current_message_start = start
 
-        try:
-            logger.info(f"Processing message: {message}")
-            self._process_message(message)
-            ray.get(self._queue.delete_message.remote(message))
-            logger.info(f"Finished processing message: {message}")
+            try:
+                logger.info(f"Processing message: {message}")
+                self._process_message(message)
+                ray.get(self._queue.delete_message.remote(message))
+                logger.info(f"Finished processing message: {message}")
 
-        except ray.exceptions.ActorDiedError:
-            logger.exception(f"An actor the worker requires has died while processing: {message}")
-            ray.actor.exit_actor()
-        except Exception:
-            logger.exception(f"Error processing message: {message}")
-        finally:
-            self._current_message_start = None
-            self._current_message = None
-            self._messages_processed += 1
+            except ray.exceptions.ActorDiedError:
+                logger.exception(f"An actor the worker requires has died while processing: {message}")
+                ray.actor.exit_actor()
+            except Exception:
+                logger.exception(f"Error processing message: {message}")
+            finally:
+                self._current_message_start = None
+                self._current_message = None
+                self._messages_processed += 1

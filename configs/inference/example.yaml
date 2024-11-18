@@ -2,6 +2,8 @@ model:
   # this will be mounted from host system to docker container via
   # runner script. stretch goal: hf support
   name_or_path: /artifacts-local
+  tensor_parallel_size: 1
+  num_scheduler_steps: 1  # 8 is faster but not supported by all models
 
 generate:
   max_tokens: 4096
@@ -9,11 +11,10 @@ generate:
   temperature: 0.1
   top_k: 50
   top_p: 1.0
-  drop_long_outputs: true
 
 pipeline:
   input_file_dir: /asdf-input
   output_file_dir: /asdf-output
-  num_workers: 1
+  num_gpus: 1
   generation_batch_size: 256
 

@@ -13,6 +13,7 @@ dependencies = [
     "pydantic>=2,<3",
     "pydantic-settings",
     "zstandard",
+    "click",
 ]
 
 classifiers = ["Development Status :: 3 - Alpha", "Typing :: Typed"]

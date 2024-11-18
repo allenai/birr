@@ -80,13 +80,13 @@ def write_predictions_to_local_file(
 
 
 def determine_remaining_files_to_process(input_dir: str, output_dir: str) -> List[str]:
-    input_dir_files = [path for path in os.listdir(input_dir) if os.path.isfile(path) and path.endswith(".jsonl")]
+    input_dir_files = [path for path in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, path)) and path.endswith(".jsonl")]
     output_dir_files = set(
-        [path for path in os.listdir(output_dir) if os.path.isfile(path) and path.endswith(".jsonl")]
+        [path for path in os.listdir(output_dir) if os.path.isfile(os.path.join(output_dir, path)) and path.endswith(".jsonl")]
     )
 
     return [
         os.path.join(input_dir, input_file)
         for input_file in input_dir_files
-        if input_dir_files not in output_dir_files
+        if input_file not in output_dir_files
     ]

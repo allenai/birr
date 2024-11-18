@@ -1,8 +1,9 @@
 import os
-from typing import Optional, Union
+from typing import Union
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings
+import yaml
 
 from birr.core.config import FormatConfig, GenerateConfig, LLMModelConfig, PipelineConfig
 
@@ -31,6 +32,21 @@ class Settings(BaseSettings):
         default=False,
         description="Whether to run in dummy mode",
     )
+
+    @staticmethod
+    def from_yaml_config(config_file_path: str) -> "Settings":
+        with open(config_file_path, "r") as f:
+            file_contents = f.read()
+            local_config = yaml.safe_load(file_contents)
+
+        model_c, generate_c, format_c, pipeline_c = (
+            LLMModelConfig(**local_config["model"]),
+            GenerateConfig(**local_config["generate"]),
+            FormatConfig(**local_config.get("format", {})),
+            PipelineConfig(**local_config["pipeline"]),
+        )
+
+        return Settings(llm_model_config=model_c, generate_config=generate_c, pipeline_config=pipeline_c)
 
     @model_validator(mode="after")
     def validate_parallelism_and_multi_copy_mutual_exclusion(self) -> "Settings":

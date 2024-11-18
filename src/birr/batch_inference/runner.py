@@ -1,5 +1,7 @@
 import logging
+from typing import Optional
 
+import click
 import ray
 from ray.util import ActorPool
 
@@ -28,8 +30,8 @@ class WorkerActor(Worker):
     """Simple ray actor wrapper around the underlying birr.batch_inference.worker class"""
 
 
-def main() -> None:
-    settings = Settings()
+def main(settings: Optional[Settings] = None) -> None:
+    settings = settings if settings else Settings()
     ray.init(
         object_store_memory=10**9 * 2,
         _metrics_export_port=8080,
@@ -65,8 +67,15 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        logger.exception("Batch inference server failed with exception: %s", e)
-        raise e
+
+    @click.command()
+    @click.option("--config-file", "-c", required=True, help="Local path to file with your job config")
+    def cli(config_file: str):
+        settings = Settings.from_yaml_config(config_file)
+        try:
+            main(settings)
+        except Exception as e:
+            logger.exception("Batch inference server failed with exception: %s", e)
+            raise e
+
+    cli()
