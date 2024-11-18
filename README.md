@@ -47,8 +47,7 @@ and will be preserved in output.
 
 Author a configuration file for your job, see example file here:
 
-<TODO: LINK TO SAMPLE CONFIG>
-
+[https://github.com/allenai/birr/blob/main/configs/inference/example.yaml](https://github.com/allenai/birr/blob/main/configs/inference/example.yaml)
 ## Run Your Job
 
 ```bash
