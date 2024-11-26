@@ -5,7 +5,7 @@ Batch InfeRence Runtime
 # Overview
 
 A simplified local-only release of the toolchain
-used by AI2 to perform large-scale inference
+used by Ai2 to perform large-scale inference
 through LLMs and VLMs.
 
 This image orchestrates inference jobs based
